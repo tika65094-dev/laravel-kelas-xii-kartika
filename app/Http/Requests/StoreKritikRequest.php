@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class StoreKritikRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class StoreKritikRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return Auth::check();
     }
 
     /**
@@ -22,7 +23,16 @@ class StoreKritikRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'comment' => ['required', 'string', 'max:500'],
+            'rating'  => ['nullable', 'integer', 'min:1', 'max:5'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'comment.required' => 'Isi komentar tidak boleh kosong.',
+            'comment.max'      => 'Komentar maksimal 500 karakter.',
         ];
     }
 }

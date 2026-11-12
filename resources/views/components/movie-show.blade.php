@@ -57,12 +57,16 @@
                         </tr>
                       </thead>
                       <tbody>
-                        @foreach ($perans as $peran)
+                        @forelse ($perans as $peran)
                         <tr>
-                          <td class="w3-list-info">{{ $peran->cast_id }}</td>
+                          <td class="w3-list-info">{{ $peran->cast->name ?? 'Unknown' }}</td>
                           <td class="w3-list-info">{{ $peran->actor }}</td>
                         </tr>
-                        @endforeach
+                        @empty
+                        <tr>
+                          <td colspan="2" class="w3-list-info" style="text-align: center; color: #999;">Data cast belum tersedia</td>
+                        </tr>
+                        @endforelse
                       </tbody>
                     </table>
                   </div>
@@ -117,21 +121,48 @@
         <div class="all-comments">
           <div class="all-comments-info">
             <a href="#">Comments</a>
-            <div class="agile-info-wthree-box">
-              <form>
-                <input type="text" placeholder="Name" required="">			           					   
-                <input type="text" placeholder="Email" required="">
-                <input type="text" placeholder="Phone" required="">
-                <textarea placeholder="Message" required=""></textarea>
-                <input type="submit" value="SEND">
-                <div class="clearfix"> </div>
-              </form>
-            </div>
+
+            @if(session('comment_success'))
+              <div class="alert alert-success alert-dismissible" role="alert" style="margin-top: 15px; margin-bottom: 10px;">
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                <i class="fa fa-check-circle"></i> {{ session('comment_success') }}
+              </div>
+            @endif
+
+            @if($errors->has('comment'))
+              <div class="alert alert-danger alert-dismissible" role="alert" style="margin-top: 15px; margin-bottom: 10px;">
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                <i class="fa fa-exclamation-circle"></i> {{ $errors->first('comment') }}
+              </div>
+            @endif
+
+            @auth
+              <div class="agile-info-wthree-box">
+                <form action="{{ route('movies.comments.store', $film->id) }}" method="POST">
+                  @csrf
+                  <p style="color: #666; margin-bottom: 8px;">
+                    <i class="fa fa-user" style="color: #FF8D1B;"></i> Berkomentar sebagai: <strong>{{ Auth::user()->name }}</strong>
+                  </p>
+                  <textarea name="comment" placeholder="Tulis komentar Anda di sini (maks. 500 karakter)..." required="" maxlength="500">{{ old('comment') }}</textarea>
+                  <input type="submit" value="SEND">
+                  <div class="clearfix"> </div>
+                </form>
+              </div>
+            @else
+              <div style="margin: 1.5em 0; padding: 25px 20px; background: #f9f9f9; border: 1px dashed #FF8D1B; border-radius: 4px; text-align: center;">
+                <p style="color: #444; font-size: 15px; margin-bottom: 15px;">
+                  <i class="fa fa-lock" style="color: #FF8D1B; font-size: 1.2em;"></i> Anda harus login terlebih dahulu untuk dapat mengirim komentar.
+                </p>
+                <a href="#" data-toggle="modal" data-target="#myModal" class="btn" style="background: #FF8D1B; color: #fff; font-weight: bold; padding: 8px 25px; text-transform: uppercase;">
+                  <i class="fa fa-sign-in"></i> Login untuk berkomentar
+                </a>
+              </div>
+            @endauth
           </div>
           <div class="media-grids">
-            @foreach ($comments as $comment)
+            @forelse ($comments as $comment)
               <div class="media">
-                <h5>{{ $comment->user_id }}</h5>
+                <h5>{{ $comment->user->name ?? 'Pengguna tidak dikenal' }}</h5>
                 <div class="media-left">
                   <a href="#">
                     <img src="{{ asset('storage/images/user.jpg') }}" title="One movies" alt=" " />
@@ -139,9 +170,16 @@
                 </div>
                 <div class="media-body">
                   <p>{{ $comment->comment }}</p>
+                  @if($comment->created_at)
+                    <span style="color: #888; font-size: 12px; margin-top: 5px; display: inline-block;">
+                      <i class="fa fa-clock-o"></i> {{ $comment->created_at->diffForHumans() }} ({{ $comment->created_at->translatedFormat('d M Y') }})
+                    </span>
+                  @endif
                 </div>
               </div>
-            @endforeach
+            @empty
+              <p style="color: #999; font-style: italic; margin-top: 15px;">Belum ada komentar untuk film ini.</p>
+            @endforelse
           </div>
         </div>
       </div>

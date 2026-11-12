@@ -26,14 +26,23 @@ class AdminSeeder extends Seeder
             "bio"      => 'administrator',
         ]);
 
-        User::create([
-            'name' => 'admin',
-            'email' => 'admin@example.com',
-            'email_verified_at' => now(),
-            'password' => Hash::make('12345678'),
-            'remember_token' => Str::random(10),
+        $user = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'admin',
+                'email_verified_at' => now(),
+                'password' => Hash::make('12345678'),
+                'remember_token' => Str::random(10),
+                'role' => 'admin',
+                'role_id' => 2,
+                'profile_id' => $profile->id,
+            ]
+        );
+
+        $user->update([
+            'role' => 'admin',
             'role_id' => 2,
-            'profile_id' => $profile->id,
+            'password' => Hash::make('12345678'),
         ]);
     }
 }
